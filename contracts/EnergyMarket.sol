@@ -2,71 +2,74 @@ pragma solidity ^0.4.4;
 
 contract EnergyMarket {
 
+    // company
+
     uint public companyPrice; // price per KW/h
-    address companyAddress;
+    address public companyAddress;
 
     function EnergyMarket(uint _companyPrice) {
         companyPrice = _companyPrice;
         companyAddress = msg.sender;
     }
 
-    function getCompanyPrice() returns (uint price) {
-        price = companyPrice;
+    function updateCompanyPrice(uint _companyPrice) {
+        require(msg.sender == companyAddress);
+        companyPrice = _companyPrice;        
     }
 
-    //
+    // house
 
     struct House {
-        bool exists;
-        uint balance; // KW
+        uint index; // index into houseAddresses starting from 1.
+        uint balanceKW;
+        uint priceKW;
+        // uint balanceETH; // how much the owner of the house can redraw.
     }
 
-    mapping (address => House) houses;
+    mapping (address => House) public houses;
+    address[] public houseAddresses;
 
-    function houseExists()
+    function countHouses() returns (uint count) {
+        return houseAddresses.length;
+    }
+
+    function houseExists(address houseAddress)
     returns (bool exists) {
-        var house = houses[msg.sender];
-        exists = house.exists;
+        var house = houses[houseAddress];
+
+        if (house.index == 0) {
+            return false;
+        }
+
+        assert(houseAddresses[house.index - 1] == houseAddress);
+        return true;
     }
 
-    /*
+    function createHouse(address houseAddress, uint balanceKW, uint priceKW) {
+        require(!houseExists(houseAddress));
 
-    function createHouse() {
-        var house = House(true, 0);
-        houses[msg.sender] = house;
+        var index = houseAddresses.length + 1;
+        var house = House(index, balanceKW, priceKW);
+
+        houses[houseAddress] = house;
+        houseAddresses.push(houseAddress);
     }
-    
-    //
 
-	/*
-	
-	function createOffer(uint price, uint total) {
-	    var offer = Offer(msg.sender, price, total);
-	    offers.push(offer);
-	}
-	
-	//
-	
-	function numOffers()
-	returns (
-	    uint total
-    ) {
-	    total = offers.length;
-	}
-	
-	function getOffer(uint idx)
-	returns (
-	    address owner,
-	    uint price,
-	    uint total
-    ) {
-        var offer = offers[idx];
-        owner = offer.owner;
-        price = offer.price;
-        total = offer.total;
-	}
+    function removeHouse(address houseToDeleteAddress) {
+        require(houseExists(houseToDeleteAddress));
+        require(msg.sender == companyAddress || msg.sender == houseToDeleteAddress);
 
-    //*/
+        var houseToDelete = houses[houseToDeleteAddress];
+        var houseToTakePlaceAddress = houseAddresses[houseAddresses.length - 1];
+        var houseToTakePlace = houses[houseToTakePlaceAddress];
 
+        // put the last house in the spot of the deleted house:
+        houseAddresses[houseToDelete.index - 1] = houseToTakePlaceAddress;
+        houseToTakePlace.index = houseToDelete.index;
+        houses[houseToTakePlaceAddress] = houseToTakePlace;
 
+        // shrink the array and delete from the mapping
+        delete houses[houseToDeleteAddress];
+        houseAddresses.length--;
+    }
 }
