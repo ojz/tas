@@ -1,0 +1,119 @@
+{
+  "contract_name": "EnergyMarket",
+  "abi": [
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "houseExists",
+      "outputs": [
+        {
+          "name": "exists",
+          "type": "bool"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "companyPrice",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [],
+      "name": "getCompanyPrice",
+      "outputs": [
+        {
+          "name": "price",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_companyPrice",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "type": "constructor"
+    }
+  ],
+  "unlinked_binary": "0x6060604052341561000f57600080fd5b604051602080610152833981016040528080519150505b600081905560018054600160a060020a03191633600160a060020a03161790555b505b60fb806100576000396000f300606060405263ffffffff60e060020a60003504166327ea88928114603757806330af7a8e14605b578063c46b064d14607d575b600080fd5b3415604157600080fd5b6047609f565b604051901515815260200160405180910390f35b3415606557600080fd5b606b60c2565b60405190815260200160405180910390f35b3415608757600080fd5b606b60c8565b60405190815260200160405180910390f35b600160a060020a0333166000908152600260205260409020805460ff16905b5090565b60005481565b6000545b905600a165627a7a72305820f8a52cd612565cff51c970861453c9c859427ffe4c42a340ec302f1638eb61690029",
+  "networks": {
+    "1501141194027": {
+      "events": {},
+      "links": {},
+      "address": "0x61675ef0ba95435e032a407cc9637ef3ddee58bb",
+      "updated_at": 1501141198798
+    },
+    "1501143468814": {
+      "events": {},
+      "links": {},
+      "address": "0xd9d5e98551a931284a6e1eaa82bdf4e44c5ab14d",
+      "updated_at": 1501143471118
+    },
+    "1501144366559": {
+      "events": {},
+      "links": {},
+      "address": "0xff8d15657d7894577b2540845453998ebeda4799",
+      "updated_at": 1501144368842
+    },
+    "1501145752559": {
+      "events": {},
+      "links": {},
+      "address": "0xd303d244b727dc4bb7e3ad0d527c80905be29a44",
+      "updated_at": 1501145754919
+    },
+    "1501145795638": {
+      "events": {},
+      "links": {},
+      "address": "0xfed0ee7ce9ff7e7d4c1b03967bf5211e0f6dc0b1",
+      "updated_at": 1501145797881
+    },
+    "1501156148305": {
+      "events": {},
+      "links": {},
+      "address": "0xc393d089e2313aea4ac8ef5015b8768c65ca7c5b",
+      "updated_at": 1501156150619
+    },
+    "1501158006590": {
+      "events": {},
+      "links": {},
+      "address": "0x4a06599c2529504060e85ac3a01e3106aa53af0b",
+      "updated_at": 1501158011227
+    },
+    "1501158026795": {
+      "events": {},
+      "links": {},
+      "address": "0x4c350b94aa1366b903c2532c104541bcbc092f11",
+      "updated_at": 1501158029208
+    },
+    "1501158600871": {
+      "events": {},
+      "links": {},
+      "address": "0x4aec6d443d84267d6506dad4da9d8ec28ca5678f",
+      "updated_at": 1501158606063
+    },
+    "1501158737077": {
+      "events": {},
+      "links": {},
+      "address": "0xa5454ce22cde4630be67aa5889da74bd7718824c",
+      "updated_at": 1501158742062
+    }
+  },
+  "schema_version": "0.0.5",
+  "updated_at": 1501158742062
+}
