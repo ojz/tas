@@ -86,7 +86,11 @@ contract EnergyMarket {
         uint priceKW;
     }
 
-    SellOrder[] sellOrders; // unsorted
+    SellOrder[] public sellOrders; // unsorted
+
+    function countSellOrders() returns (uint count) {
+        return sellOrders.length;
+    }
 
     function sellOrder(uint maxKW, uint priceKW) {
         require(houseExists(msg.sender));
@@ -101,7 +105,7 @@ contract EnergyMarket {
         sellOrders.push(so);
     }
 
-    function cancelSellOrder(uint index) {
+    /*function cancelSellOrder(uint index) {
         require(houseExists(msg.sender));
         
         require(sellOrders.length > index);
@@ -115,17 +119,24 @@ contract EnergyMarket {
         // remove the sell order
         sellOrders[index] = sellOrders[sellOrders.length - 1];
         sellOrders.length--;
-    }
+    }*/
 
     // buy
 
     struct BuyOrder {
+        uint totalPrice;
         uint companyAmount; // how much we will buy from the company.
         uint[] orders; // indices of the sell orders used.
         uint[] amounts; // amount of KW used per sell order.
     }
 
-    BuyOrder[] buyOrders;
+    BuyOrder[] public buyOrders;
+
+    function countBuyOrders() returns (uint count) {
+        return buyOrders.length;
+    }
+
+    event Debug(string what, uint value);
 
     function buyOrder(uint totalKW) returns (uint totalPrice) {
 
@@ -133,8 +144,14 @@ contract EnergyMarket {
         var companyAmount = totalKW;
         var mostExpensivePriceUsed = companyPrice;
 
-        uint[] orders; // both sorted by price
-        uint[] amounts;
+        // seems like we need to create the BuyOrder first
+        buyOrders.length++;
+        BuyOrder bo = buyOrders[buyOrders.length-1];
+        var orders = bo.orders;
+        var amounts = bo.amounts;
+
+        // YES. this will now return 0, as expected:
+        // Debug("orders length", orders.length);
 
         // loop over the sellOrders, iteratively improve the buyOrder
         for (uint i = 0; i < sellOrders.length; i++) {
@@ -156,12 +173,18 @@ contract EnergyMarket {
                 }
             }
 
-            // if we reached the end, push to the arrays and subtract from companyAmount.
-            if (position == orders.length - 1) {
-                orders.push(i);
+            Debug("position", position);
+            Debug("to allocate", toAllocate);
 
+            // if we reached the end, push to the arrays and subtract from companyAmount.
+            if (position == orders.length) {
+                orders.push(i);
                 var willAllocate = toAllocate > so.maxKW ? so.maxKW : toAllocate;
+                toAllocate = toAllocate - willAllocate;
+
                 amounts.push(willAllocate);
+
+                Debug("appending", willAllocate);
 
                 // update how much we will need to buy from the company
                 companyAmount = toAllocate - willAllocate;
@@ -170,42 +193,45 @@ contract EnergyMarket {
                 if (companyAmount == 0) {
                     mostExpensivePriceUsed = so.priceKW;
                 }
+            } else {
+                Debug("inserting", 0);
 
-                continue;
-            }
-
-            // make room for the order, moving all the more expensive orders to the right.
-            orders.length++;
-            amounts.length++;
-            for (uint j = orders.length - 2; j > position; j--) {
-                orders[j] = orders[j - 1];
-                amounts[j] = amounts[j - 1];
-            }
-
-            orders[position] = i;
-            amounts[position] = 0;
-
-            // update the amounts, starting from the current
-            for (; position < orders.length; position++) {
-                so = sellOrders[orders[position]];
-
-                willAllocate = toAllocate > so.maxKW ? so.maxKW : toAllocate;
-                amounts[position] = willAllocate;
-
-                toAllocate = toAllocate - willAllocate;
-                if (toAllocate == 0) {
-                    break;
+                // make room for the order, moving all the more expensive orders to the right.
+                orders.length++;
+                amounts.length++;
+                for (uint j = orders.length - 2; j > position; j--) {
+                    orders[j] = orders[j - 1];
+                    amounts[j] = amounts[j - 1];
                 }
+
+                orders[position] = i;
+                amounts[position] = 0;
+
+                // update the amounts, starting from the current
+                for (; position < orders.length; position++) {
+                    so = sellOrders[orders[position]];
+
+                    willAllocate = toAllocate > so.maxKW ? so.maxKW : toAllocate;
+                    amounts[position] = willAllocate;
+
+                    toAllocate = toAllocate - willAllocate;
+                    if (toAllocate == 0) {
+                        break;
+                    }
+                }
+
+                // remove all left over orders
+                for (j = position + 1; j < orders.length; j++) {
+                    delete orders[j];
+                    delete amounts[j];
+                }
+
+                orders.length = position - 1;
+                amounts.length = position - 1;
             }
 
-            // remove all left over orders
-            for (j = position + 1; j < orders.length; j++) {
-                delete orders[j];
-                delete amounts[j];
-            }
-
-            orders.length = position - 1;
-            amounts.length = position - 1;
+            Debug("left to allocate:", toAllocate);
+            totalKW = toAllocate;
 
             // update the most expensive price used
             if (toAllocate > 0) {
@@ -215,23 +241,24 @@ contract EnergyMarket {
                 companyAmount = 0;
                 mostExpensivePriceUsed = sellOrders[orders[orders.length - 1]].priceKW;
             }
+
+            Debug("most expensive price", mostExpensivePriceUsed);
         }
 
         // calculate the total price of the buy order
         totalPrice = companyPrice * companyAmount;
-        for (i = 0; i < orders.length; i++) {
-            totalPrice = totalPrice + (amounts[i] * sellOrders[orders[i]].priceKW);
+        for (uint ii = 0; ii < orders.length; ii++) {
+            totalPrice = totalPrice + (amounts[ii] * sellOrders[orders[ii]].priceKW);
         }
+
+        bo.totalPrice = totalPrice;
+        bo.companyAmount = companyAmount;
 
         // update the sell orders that we used
         for (i = 0; i < orders.length; i++) {
             var order = sellOrders[orders[i]];
             order.maxKW = order.maxKW - amounts[i];
         }
-
-        // store the buy order
-        BuyOrder memory bo = BuyOrder(companyAmount, orders, amounts);
-        buyOrders.push(bo);
     }
 
 /*
