@@ -28,11 +28,11 @@ class App extends Component {
 
     if (!exists) {
       console.log('creating')
-      const tx = await em.createHouse(addr, 0, 0, { from: addr, gas: 1000000 })
+      const tx = await em.createHouse(addr, 0, { from: addr, gas: 1000000 })
       console.log(tx)
     } else {
-      console.log('deleting')
-      const tx = await em.removeHouse(addr, { from: addr, gas: 1000000 })
+      console.log('adding')
+      const tx = await em.addBalance(addr, 100, { from: addr, gas: 1000000 })
       console.log(tx)
     }
   }

@@ -14,8 +14,8 @@ export async function listHouses() {
         const house = {
             index: houseResp[0].toNumber(),
             balanceKW: houseResp[1].toNumber(),
-            priceKW: houseResp[2].toNumber(),
         }
+
         console.log('House', i, 'has address', address, 'and data', house)
     }
 }

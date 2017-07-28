@@ -21,9 +21,7 @@ contract EnergyMarket {
 
     struct House {
         uint index; // index into houseAddresses starting from 1.
-        uint balanceKW;
-        uint priceKW;
-        // uint balanceETH; // how much the owner of the house can redraw.
+        uint balanceKW; // how much energy the house has left to sell.
     }
 
     mapping (address => House) public houses;
@@ -45,11 +43,11 @@ contract EnergyMarket {
         return true;
     }
 
-    function createHouse(address houseAddress, uint balanceKW, uint priceKW) {
+    function createHouse(address houseAddress, uint balanceKW) {
         require(!houseExists(houseAddress));
 
         var index = houseAddresses.length + 1;
-        var house = House(index, balanceKW, priceKW);
+        var house = House(index, balanceKW);
 
         houses[houseAddress] = house;
         houseAddresses.push(houseAddress);
@@ -66,10 +64,74 @@ contract EnergyMarket {
         // put the last house in the spot of the deleted house:
         houseAddresses[houseToDelete.index - 1] = houseToTakePlaceAddress;
         houseToTakePlace.index = houseToDelete.index;
-        houses[houseToTakePlaceAddress] = houseToTakePlace;
 
         // shrink the array and delete from the mapping
         delete houses[houseToDeleteAddress];
         houseAddresses.length--;
+    }
+
+    function addBalance(address houseAddress, uint additionalKW) {
+        require(houseExists(houseAddress));
+        require(msg.sender == companyAddress || msg.sender == houseAddress);
+
+        var house = houses[houseAddress];
+        house.balanceKW = house.balanceKW + additionalKW;
+    }
+
+    // sell 
+/*
+    struct SellOrder {
+        uint maxKW;
+        uint priceKW;
+    }
+
+    mapping (address => SellOrder[]) sellOrders;
+
+    function sellOrder(uint maxKW, uint priceKW) {
+        require(houseExists(msg.sender));
+        SellOrder storage sellOrder;
+        sellOrder = SellOrder(maxKW, priceKW);
+
+        if (sellOrders[msg.sender].length > 0) {
+            sellOrders[msg.sender].push(sellOrder);
+        } else {
+            sellOrders[msg.sender] = [sellOrder];
+        }
+    }
+
+    function cancelSellOrder(address owner, uint index) {
+        require(houseExists(owner));
+        require(msg.sender == companyAddress || msg.sender == owner);
+    }
+
+    // buy
+
+    struct BuyOrder {
+        address[] storage from;
+        uint[] storage amount;
+    }
+
+    function buy() returns (uint index, uint totalPrice) {
+        // make an initial buyOrder
+        // loop over the houseAddresses
+        // iteratively improve the buyOrder
+    }
+
+    function pay(uint index) {
+    }
+*/
+    // withdraw
+
+    mapping (address => uint) balances;
+
+    function withdraw() {
+        var amount = balances[msg.sender];
+
+        if (amount == 0) {
+            return;
+        }
+
+        balances[msg.sender] = 0;
+        msg.sender.transfer(amount);
     }
 }
